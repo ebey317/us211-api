@@ -44,6 +44,30 @@ The actions it offers (see `GET /capabilities`):
 | **pinpoint** | Jumps straight to the **exact document / page / form** instead of making you scroll through a whole site. |
 | **fill form** | **Pre-fills an intake/application form** from the person's details, then emails copies automatically. |
 
+## Who actually runs this? (an agent, not the repo)
+
+**`us211-api` is a tool *for* AI agents — it is not a standalone app.** The repo
+is just Python files; the *doing* (sending email, speaking aloud, printing,
+filling forms) requires an agent with tools and an LLM loop. That agent is
+whatever imported the library and supplied capabilities via
+`register_hooks(send_email=…, speak=…, print_doc=…)`.
+
+Concretely, a human only ever uses this **through an agent**, e.g.:
+
+- **Hermes** (email MCP + `text_to_speech`)
+- **Kimi CLI**, **OpenCLAW**, **Anthropic Claude**, **MiniMax** — each with its own tool surface
+- any **desktop agent** or **chat box** that can import Python and call functions
+
+Even "copy the code into a chat and ask it to run" still means *an agent* is in
+the loop. There is no path where a person gets email/TTS/form-fill out of the
+raw repo without an agent executing it. That's intentional: the library stays
+portable and never pretends to send mail it can't.
+
+**No agent?** The endpoints still return data and the action functions still
+return honest *"draft prepared, not sent"* status — nothing breaks, nothing is
+faked. Wire your agent's tools in and the actions go live. See
+[HOSTS.md](HOSTS.md) for example wirings across several agents.
+
 ## Why use this instead of just going to the website?
 
 You *can* go to your state's 211 website and do all the work yourself. Here's

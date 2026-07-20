@@ -5,10 +5,10 @@ the content and a ready-to-run instruction, but the actual side-effects
 (sending email, printing, speaking) are executed by the agent/host environment
 that has those capabilities. We never claim an email "sent" unless it did.
 
-In the Hermes environment this module is imported by the host, which can wire
-these to the real tools (email MCP, text_to_speech, etc.). When those tools are
-not present, the functions return an honest status describing what *would*
-happen, so the API stays usable and testable without a live mail server.
+In a host agent this module is imported and the host wires these to its real
+tools (email, TTS, print). When those tools are not present, the functions
+return an honest status describing what *would* happen, so the API stays usable
+and testable without a live mail server.
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ class ActionResult:
     detail: dict[str, Any] = field(default_factory=dict)
 
 
-# Optional hooks the host can inject (e.g. Hermes email MCP, TTS tool).
+# Optional hooks the host can inject (e.g. the agent's email tool, TTS tool).
 _SEND_EMAIL_HOOK: Callable[..., Any] | None = None
 _SPEAK_HOOK: Callable[[str], Any] | None = None
 _PRINT_HOOK: Callable[[str], Any] | None = None

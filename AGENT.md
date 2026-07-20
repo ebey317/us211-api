@@ -52,11 +52,15 @@ These map 1:1 to `us211.agent.CAPABILITIES` and `us211.actions.*`. The API
 surfaces them via `GET /ask?state=IN&category=food` (summary + list + actions)
 and `GET /capabilities`.
 
-## Wiring to real tools (Hermes host)
+## Wiring to real tools (any host agent)
 
 `us211.actions.register_hooks(send_email=..., speak=..., print_doc=...)` lets the
-host inject real email / TTS / print. Without hooks, functions return an honest
-"not sent / draft prepared" status — they never pretend a side-effect happened.
+**host agent** inject real email / TTS / print. The library is agent-agnostic:
+Hermes, Kimi CLI, OpenCLAW, Anthropic Claude, MiniMax, or any agent that can
+import Python and supply callables all work the same way. Without hooks,
+functions return an honest "not sent / draft prepared" status — they never
+pretend a side-effect happened. See HOSTS.md for concrete wirings.
+
 
 ## The "why use this" answer (for README / pitch)
 
