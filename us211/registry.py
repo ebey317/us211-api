@@ -63,14 +63,16 @@ _STATE_NAMES: dict[str, str] = {
 }
 
 # Verified 211 web addresses (researched 2026-07-20). Platform is a
-# best-effort guess from the site URL pattern; VisionLink = *.communityos.org.
 # base_url = the official public 211 site for that region.
+# Platform is a best-effort guess. VisionLink = *.communityos.org. findhelp =
+# states confirmed to run their 211 on the findhelp (auntbertha) national
+# network. Everything else stays UNKNOWN until its primary platform is verified.
 _OVERRIDES: dict[str, tuple[PlatformType, str | None]] = {
     "AL": (PlatformType.UNKNOWN, "https://www.211connectsalabama.org/"),
     "AK": (PlatformType.UNKNOWN, "https://www.unitedwayanc.org/work/alaska-211"),
     "AZ": (PlatformType.UNKNOWN, "https://211arizona.org/"),
     "AR": (PlatformType.UNKNOWN, "https://arkansas211.org/"),
-    "CA": (PlatformType.UNKNOWN, "https://www.211california.org/"),
+    "CA": (PlatformType.FINDHELP, "https://www.211california.org/"),
     "CO": (PlatformType.UNKNOWN, "https://www.211colorado.org/"),
     "CT": (PlatformType.UNKNOWN, "https://www.211ct.org/"),
     "DE": (PlatformType.UNKNOWN, "https://uwde.org/what-we-do/get-help/delaware-211/"),
@@ -109,7 +111,7 @@ _OVERRIDES: dict[str, tuple[PlatformType, str | None]] = {
     "SC": (PlatformType.UNKNOWN, "https://www.uwasc.org/sc211"),
     "SD": (PlatformType.UNKNOWN, "https://www.helplinecenter.org/"),
     "TN": (PlatformType.VISIONLINK, "https://easttn211.communityos.org/"),
-    "TX": (PlatformType.UNKNOWN, "https://www.211texas.org/"),
+    "TX": (PlatformType.FINDHELP, "https://www.211texas.org/"),
     "UT": (PlatformType.UNKNOWN, "https://211utah.org/"),
     "VT": (PlatformType.UNKNOWN, "https://vermont211.org/"),
     "VA": (PlatformType.UNKNOWN, "https://211virginia.org/"),

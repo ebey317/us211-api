@@ -52,9 +52,10 @@ def test_ask_unknown_state_404():
     assert r.status_code == 404
 
 
-def test_ask_unwired_state_501():
+def test_ask_unwired_state_falls_back_to_findhelp():
+    # WY is not wired to a primary adapter; findhelp national fallback applies.
     r = client.get("/ask", params={"state": "WY", "category": "food"})
-    assert r.status_code == 501
+    assert r.status_code in (200, 502)
 
 
 def test_capabilities_endpoint():

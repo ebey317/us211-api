@@ -38,9 +38,13 @@ def test_resources_indiana_live():
         assert rec["source"] == "Indiana 211"
 
 
-def test_resources_unknown_state_501():
+def test_resources_unknown_state_falls_back_to_findhelp():
+    # WY is not wired to a primary adapter; the findhelp national fallback
+    # should kick in (200, possibly empty if the page yields no parseable cards).
     r = client.get("/resources", params={"state": "WY", "category": "food"})
-    assert r.status_code == 501
+    assert r.status_code in (200, 502)
+    if r.status_code == 200:
+        assert isinstance(r.json(), list)
 
 
 def test_resources_bad_state_404():

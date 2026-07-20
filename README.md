@@ -1,5 +1,9 @@
 # us211-api
 
+> 🌟 **If this repo helps you, please star it.** It's free and open source, and
+> stars are how people find it — and how the folks who need it most get helped.
+> No one should be unable to use it; if you're here, throw a star on the way out. 🙏
+
 An open, unified REST API **and assistant** for **2-1-1 health & human services
 data** across all 50 US states, DC, and the five territories (PR, USVI, Guam,
 American Samoa, Northern Mariana Islands).
@@ -116,8 +120,20 @@ scrapers.
 |-------|-------|--------|
 | 1 | Indiana (VisionLink) → HSDS → API + assistant | ✅ live (real data) |
 | 2 | VisionLink adapter → all VisionLink states | 🟡 IN/WI/ID field maps pinned; upstream endpoint rate-limits under load (adapter retries + returns [] honestly) |
-| 3 | + iCarol + findhelp adapters | planned |
-| 4 | 50 + DC + 5 territories, registry-driven | 🟡 all 51 state/DC web addresses mapped into registry; territories have no standalone 211 program |
+| 3 | findhelp adapter → national fallback | 🟡 adapter built; partner API path ready (needs key), public crawl 403s server-side (returns [] honestly) |
+| 4 | 50 + DC + 5 territories, registry-driven | 🟡 all 51 state/DC web addresses mapped; IP auto-detect; territories have no standalone 211 program |
+| 5 | **Expanded Help Portfolio** (re-entry desk) | planned — a "help resume" packet for people leaving prison / needing a fresh start: bundles food, housing, ID, employment, legal into one assisted intake |
+
+## The re-entry desk (Expanded Help Portfolio)
+
+One planned use case close to the project's heart: a **re-entry desk**. Not
+called that in the code — it's an **"expanded help portfolio"** (think of it as
+a *help résumé*): when someone is leaving prison, or just starting over, the
+assistant bundles the categories they need — food, housing, ID replacement,
+employment, legal — into one assisted intake, pre-fills the forms, and emails
+copies. It helps people re-entering society *and* anyone who just needs a hand.
+Same machinery as everything else here; it's a composed workflow on top of
+`/ask` + the action tools.
 
 ## Legal / ethical stance
 
