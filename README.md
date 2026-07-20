@@ -43,7 +43,7 @@ scrapers.
 
 | Phase | Scope | Status |
 |-------|-------|--------|
-| 1 | Indiana (VisionLink) → HSDS → API | 🚧 in progress |
+| 1 | Indiana (VisionLink) → HSDS → API | ✅ live (real data) |
 | 2 | VisionLink adapter → all VisionLink states | planned |
 | 3 | + iCarol + findhelp adapters | planned |
 | 4 | 50 + DC + 5 territories, registry-driven | planned |
