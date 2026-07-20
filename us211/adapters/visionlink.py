@@ -1,23 +1,30 @@
-"""VisionLink CommunityOS adapter — reverse-engineered live endpoint.
+"""VisionLink CommunityOS adapter — reverse-engineered, instance-aware.
 
-VisionLink powers several state 211s (Indiana confirmed). Its public SPA is
-backed by a JSON search API discovered by capturing the site's own network
-traffic:
+VisionLink (a United Way product) powers several state 211s (IN, ID, WI
+confirmed) on the CommunityOS platform. Its public SPA is backed by a JSON
+search API discovered by capturing the site's own network traffic:
 
     POST {base_url}/guided_search/results/limit/{n}/offset/{o}/order/.../direction/asc
     Content-Type: application/json
     body: a "guided search" filter document keyed by taxonomy_id
 
-The response is `{"result":"success","data":[ {sc_NNN: ...}, ... ]}` where the
-`sc_NNN` keys are opaque column codes. The mapping below was decoded field by
-field against live Indiana data (see FIELD MAP). Category -> taxonomy_id comes
-from the site's own subcategory links.
+The response is {"result":"success","data":[ {sc_NNN: ...}, ... ]} where sc_NNN
+are **opaque, per-instance** column codes. We verified that Indiana's codes
+(sc_610 = org name) differ from Wisconsin's (sc_388 = org name), so field codes
+are NOT shared across instances. We therefore pin the codes we have *confirmed
+against live data* in _KNOWN_INSTANCES, and fall back to heuristic auto-detection
+for any new instance.
+
+Category -> taxonomy_id comes from the site's own guided-search subcategory
+links (captured once; the food codes 407761/407770 are shared across instances).
 
 No data is fabricated: if the upstream returns no usable rows, we return [].
 """
 from __future__ import annotations
 
+import asyncio
 import json
+import re
 
 import httpx
 
@@ -32,25 +39,14 @@ from us211.models import (
 
 _UA = "Mozilla/5.0 (compatible; us211-api/0.1; +https://github.com/ebey317/us211-api)"
 
-# Decoded VisionLink CommunityOS field codes (verified against live IN data).
-F_ORG_NAME = "sc_610"
-F_ORG_DESC = "sc_614"
-F_ORG_URL = "sc_606"
-F_SVC_NAME = "sc_735"
-F_SVC_DESC = "sc_728"
-F_PHONE = "sc_726"
-F_ADDR1 = "sc_675_address_1"
-F_CITY = "sc_675_city"
-F_STATE = "sc_675_state"
-F_ZIP = "sc_675_zip"
-F_LAT = "sc_675_latitude"
-F_LNG = "sc_675_longitude"
-F_STATUS = "sc_706"
+_PHONE_RE = re.compile(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
+_URL_RE = re.compile(r"^https?://", re.I)
 
 # Normalized category -> VisionLink taxonomy_id(s). Sourced from the site's own
 # guided-search subcategory links. Extend as more categories are mapped.
+# (407761 = Food Pantries, 407770 = related food; shared across instances.)
 _CATEGORY_TAXONOMY: dict[str, list[int]] = {
-    "food": [407761, 407770],        # Food Pantries (+ related)
+    "food": [407761, 407770],
     "food_pantry": [407761],
     "baby_food": [407769, 410327],
     # TODO: capture taxonomy_ids for housing/financial/utilities/etc from the
@@ -58,6 +54,39 @@ _CATEGORY_TAXONOMY: dict[str, list[int]] = {
 }
 
 _ORDER = "site%5Csite_addressus%5Csite_addressus%5Czdr"
+
+# Confirmed per-instance field codes (verified against live data 2026-07-20).
+# VisionLink CommunityOS field codes are per-instance, NOT shared, so we pin
+# the ones we've confirmed and fall back to auto-detection for new instances.
+_KNOWN_INSTANCES: dict[str, dict] = {
+    "https://in211.communityos.org": {
+        "org_name": "sc_610", "org_url": "sc_606", "svc_name": "sc_735",
+        "svc_desc": "sc_728", "phone": "sc_726", "addr_1": "sc_675_address_1",
+        "city": "sc_675_city", "state": "sc_675_state", "zip": "sc_675_zip",
+        "lat": "sc_675_latitude", "lng": "sc_675_longitude",
+    },
+    "https://211wisconsin.communityos.org": {
+        "org_name": "sc_388", "org_url": "sc_384", "svc_name": "sc_510",
+        "svc_desc": "sc_521", "phone": "sc_1665", "addr_1": "sc_493_address_1",
+        "city": "sc_493_city", "state": "sc_493_state", "zip": "sc_493_zip",
+        "lat": "sc_493_latitude", "lng": "sc_493_longitude",
+    },
+    "https://211-idaho.communityos.org": {
+        "org_name": "sc_610", "org_url": "sc_606", "svc_name": "sc_735",
+        "svc_desc": "sc_728", "phone": "sc_864", "addr_1": "sc_673_address_1",
+        "city": "sc_673_city", "state": "sc_673_state", "zip": "sc_673_zip",
+        "lat": "sc_673_latitude", "lng": "sc_673_longitude",
+    },
+    # TN (easttn211) returned 0 rows for food taxonomy 407761 — food may be
+    # under a different taxonomy_id there; left to auto-detect once confirmed.
+}
+
+
+def _field_by_suffix(row: dict, suffixes: tuple[str, ...]) -> str | None:
+    for k in row:
+        if any(k.endswith(s) for s in suffixes):
+            return k
+    return None
 
 
 def _build_body(taxonomy_ids: list[int]) -> dict:
@@ -79,8 +108,50 @@ def _build_body(taxonomy_ids: list[int]) -> dict:
     }
 
 
+def _norm_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    return url if url.startswith("http") else f"https://{url}"
+
+
+def _auto_detect(row: dict) -> dict:
+    """Best-effort field-code detection for unconfirmed VisionLink instances.
+
+    Fallback only. Detects address/geo by suffix and phone/url by pattern;
+    name falls back to the longest short title-cased free-text field.
+    """
+    fm: dict[str, str | None] = {}
+    fm["addr_1"] = _field_by_suffix(row, ("_address_1",))
+    fm["city"] = _field_by_suffix(row, ("_city",))
+    fm["state"] = _field_by_suffix(row, ("_state",))
+    fm["zip"] = _field_by_suffix(row, ("_zip",))
+    fm["lat"] = _field_by_suffix(row, ("_latitude",))
+    fm["lng"] = _field_by_suffix(row, ("_longitude",))
+    for k, v in row.items():
+        if fm.get("phone") is None and isinstance(v, str) and _PHONE_RE.search(v):
+            fm["phone"] = k
+        if fm.get("org_url") is None and isinstance(v, str) and _URL_RE.match(v) and len(v) < 200:
+            fm["org_url"] = k
+    best, best_len = None, 0
+    for k, v in row.items():
+        if not isinstance(v, str) or not (3 <= len(v) <= 80):
+            continue
+        if _URL_RE.match(v) or _PHONE_RE.search(v) or re.match(r"^\d{4}-\d{2}", v):
+            continue
+        if any(k.endswith(s) for s in ("_city", "_state", "_zip", "_county",
+                                        "_country", "_latitude", "_longitude",
+                                        "_address", "_href_label", "_id", "_ids",
+                                        "_taxonomy", "_status")):
+            continue
+        if " " in v and v == v.title() and len(v) > best_len:
+            best, best_len = k, len(v)
+    fm["org_name"] = best
+    fm["svc_name"] = best
+    return {k: v for k, v in fm.items() if v is not None}
+
+
 class VisionLinkAdapter(BaseAdapter):
-    """Adapter for VisionLink CommunityOS 211 sites."""
+    """Adapter for VisionLink CommunityOS 211 sites (IN/ID/WI/...)."""
 
     CATEGORY_MAP = {k: ",".join(map(str, v)) for k, v in _CATEGORY_TAXONOMY.items()}
 
@@ -95,8 +166,7 @@ class VisionLinkAdapter(BaseAdapter):
             return []
         taxonomy_ids = _CATEGORY_TAXONOMY.get(category.lower())
         if not taxonomy_ids:
-            # Category not yet mapped for this platform — honest empty result.
-            return []
+            return []  # category not yet mapped — honest empty result
 
         url = (
             f"{self.base_url}/guided_search/results/limit/{limit}/offset/0"
@@ -110,58 +180,75 @@ class VisionLinkAdapter(BaseAdapter):
             "Referer": f"{self.base_url}/",
         }
         body = _build_body(taxonomy_ids)
-        async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
+        # The VisionLink endpoint is occasionally flaky (returns an HTML page
+        # instead of JSON under load / rate-limiting). Retry a few times with
+        # backoff; never fabricate data on failure.
+        last_err: Exception | None = None
+        for attempt in range(3):
             try:
-                resp = await client.post(url, json=body)
-            except httpx.HTTPError:
-                return []
-        if resp.status_code != 200:
-            return []
-        try:
-            data = resp.json()
-        except ValueError:
+                async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
+                    resp = await client.post(url, json=body)
+                if resp.status_code != 200:
+                    continue
+                try:
+                    data = resp.json()
+                except ValueError:
+                    # got HTML, not JSON — transient; back off and retry
+                    await asyncio.sleep(1.5 * (attempt + 1))
+                    continue
+                break
+            except httpx.HTTPError as exc:
+                last_err = exc
+                await asyncio.sleep(1.5 * (attempt + 1))
+        else:
             return []
         if not isinstance(data, dict) or data.get("result") != "success":
             return []
         rows = data.get("data") or []
-        return [self._to_resource(r, category) for r in rows if self._is_active(r)]
+        if not rows:
+            return []
+        # Confirmed codes for known instances; else heuristic auto-detect.
+        fmap = _KNOWN_INSTANCES.get(self.base_url.rstrip("/"))
+        if fmap is None:
+            fmap = _auto_detect(rows[0])
+        return [
+            self._to_resource(r, fmap, category)
+            for r in rows
+            if r.get(fmap.get("org_name")) or r.get(fmap.get("svc_name"))
+        ]
 
-    @staticmethod
-    def _is_active(row: dict) -> bool:
-        status = (row.get(F_STATUS) or "").lower()
-        return status in ("", "active")
-
-    def _to_resource(self, row: dict, category: str) -> Resource:
-        org_name = row.get(F_ORG_NAME) or "Unknown organization"
+    def _to_resource(self, row: dict, fm: dict, category: str) -> Resource:
+        org_name = row.get(fm["org_name"]) or "Unknown organization"
         org = Organization(
             id=f"vl-org-{abs(hash(org_name)) % 10_000_000}",
             name=org_name,
-            description=row.get(F_ORG_DESC),
-            url=self._norm_url(row.get(F_ORG_URL)),
+            description=row.get(fm.get("svc_desc")),
+            url=_norm_url(row.get(fm.get("org_url"))),
         )
         service = Service(
-            id=f"vl-svc-{abs(hash(org_name + str(row.get(F_SVC_NAME)))) % 10_000_000}",
+            id=f"vl-svc-{abs(hash(org_name + str(row.get(fm['svc_name'])))) % 10_000_000}",
             organization_id=org.id,
-            name=row.get(F_SVC_NAME) or category.title(),
-            description=row.get(F_SVC_DESC),
+            name=row.get(fm["svc_name"]) or category.title(),
+            description=row.get(fm.get("svc_desc")),
             status="active",
         )
         location = None
-        lat, lng = row.get(F_LAT), row.get(F_LNG)
-        if lat is not None and lng is not None:
+        lat, lng = row.get(fm.get("lat")), row.get(fm.get("lng"))
+        if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
             location = Location(
                 id=f"vl-loc-{abs(hash(str(lat) + str(lng))) % 10_000_000}",
                 name=org_name,
-                latitude=lat,
-                longitude=lng,
+                latitude=float(lat),
+                longitude=float(lng),
             )
         address = None
-        if row.get(F_ADDR1):
+        if row.get(fm.get("addr_1")):
+            zip_raw = row.get(fm.get("zip"))
             address = PhysicalAddress(
-                address_1=row.get(F_ADDR1),
-                city=row.get(F_CITY),
-                state_province=row.get(F_STATE),
-                postal_code=str(row.get(F_ZIP)) if row.get(F_ZIP) else None,
+                address_1=row.get(fm["addr_1"]),
+                city=row.get(fm.get("city")),
+                state_province=row.get(fm.get("state")),
+                postal_code=str(zip_raw) if zip_raw is not None else None,
                 country="US",
             )
         return Resource(
@@ -171,11 +258,5 @@ class VisionLinkAdapter(BaseAdapter):
             service=service,
             location=location,
             address=address,
-            phone=row.get(F_PHONE),
+            phone=row.get(fm.get("phone")),
         )
-
-    @staticmethod
-    def _norm_url(url: str | None) -> str | None:
-        if not url:
-            return None
-        return url if url.startswith("http") else f"https://{url}"
