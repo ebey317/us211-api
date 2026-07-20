@@ -44,9 +44,9 @@ scrapers.
 | Phase | Scope | Status |
 |-------|-------|--------|
 | 1 | Indiana (VisionLink) → HSDS → API | ✅ live (real data) |
-| 2 | VisionLink adapter → all VisionLink states | planned |
+| 2 | VisionLink adapter → all VisionLink states | 🟡 IN/WI/ID field maps pinned; upstream endpoint is rate-limited/flaky (returns HTML under load) — adapter retries + returns [] honestly |
 | 3 | + iCarol + findhelp adapters | planned |
-| 4 | 50 + DC + 5 territories, registry-driven | planned |
+| 4 | 50 + DC + 5 territories, registry-driven | 🟡 all 51 state/DC web addresses mapped into registry; territories have no standalone 211 program |
 
 ## Legal / ethical stance
 
