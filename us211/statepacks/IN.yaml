@@ -1,0 +1,145 @@
+# us211 Standard State Pack — Indiana
+# Purpose: arrival and establishment guide for anyone relocating to Indiana,
+#   with or without money, documents, or housing.
+
+state_code: IN
+state_name: Indiana
+last_verified: 2026-07-21
+audience: |
+  Anyone arriving in Indiana: with a job or without one, with a home or without
+  one, with documents or without them. This covers the practical first 72 hours
+  and the first 90 days of getting established.
+
+sections:
+  - id: emergency
+    title: Emergency & immediate safety
+    note: "If you are in danger, call 911. If you are in crisis, call or text 988."
+    items:
+      - name: 911
+        description: Police, fire, medical emergency
+        url:
+        phone: "911"
+      - name: 988 Suicide & Crisis Lifeline
+        description: Call or text 24/7
+        url: https://988lifeline.org
+        phone: "988"
+      - name: Indiana 211
+        description: Dial 2-1-1 for shelter, food, utility, and crisis referrals
+        url: https://in211.communityos.org
+        phone: "211"
+
+  - id: documents
+    title: Documents & identity
+    note: "Without ID, many doors stay closed. Start these as soon as possible."
+    items:
+      - name: Indiana driver's license or state ID
+        description: Apply for, renew, or replace through the BMV
+        url: https://www.in.gov/bmv/
+        required_documents: ["proof of identity", "proof of Indiana residency", "Social Security number"]
+      - name: Indiana birth certificate
+        description: Order from the Indiana State Department of Health
+        url: https://www.in.gov/isdh/vital-records/
+      - name: Social Security card
+        description: Replace or request a card
+        url: https://www.ssa.gov/ssnumber
+        phone: "1-800-772-1213"
+
+  - id: clothing
+    title: Free or cheap clothing
+    note:
+    items:
+      - name: Indiana 211 — search "clothing"
+        description: Find free or low-cost clothing closets by zip code
+        url: https://in211.communityos.org
+        phone: "211"
+
+  - id: shelter
+    title: Shelter & housing tonight
+    note: "If you have nowhere safe to sleep tonight, start here."
+    items:
+      - name: Indiana 211 (dial 2-1-1)
+        description: Shelter, housing, and utility referrals statewide
+        url: https://in211.communityos.org
+        phone: "211"
+      - name: Indiana Housing Now / continuum of care
+        description: Coordinated entry and homeless services
+        url: https://www.in.gov/ihcda/
+
+  - id: food
+    title: Food & meals
+    note:
+    items:
+      - name: SNAP (Supplemental Nutrition Assistance Program)
+        description: Apply for food assistance online or by phone
+        url: https://www.in.gov/fssa/
+        apply_url: https://www.in.gov/fssa/
+        phone: "1-800-403-0864"
+      - name: Indiana 211 — food pantries / hot meals
+        description: Search by zip code
+        url: https://in211.communityos.org
+        phone: "211"
+
+  - id: health
+    title: Health & mental health
+    note:
+    items:
+      - name: Indiana Medicaid
+        description: Free or low-cost health coverage
+        url: https://www.in.gov/fssa/
+        apply_url: https://www.in.gov/fssa/
+      - name: Federally Qualified Health Centers
+        description: Sliding-fee clinics regardless of insurance
+        url: https://findahealthcenter.hrsa.gov
+
+  - id: work
+    title: Work, income & training
+    note:
+    items:
+      - name: Indiana unemployment insurance
+        description: File a claim if you lost a job
+        url: https://www.in.gov/dwd/
+      - name: Indiana Workforce Development (WorkOne)
+        description: Job training, resume help, job fairs
+        url: https://www.in.gov/dwd/
+
+  - id: transportation
+    title: Getting around
+    note:
+    items:
+      - name: Indiana public transit directory
+        description: Find local bus systems by county
+        url: https://www.in.gov/indot/multimodal/transit/
+
+  - id: legal
+    title: Legal rights & help
+    note:
+    items:
+      - name: Indiana Tenant-Landlord Handbook
+        description: Plain-language rights and responsibilities
+        url: https://www.in.gov/ihcda/
+      - name: Indiana Legal Services
+        description: Free civil legal help for low-income residents
+        url: https://www.indianalegalservices.org
+      - name: Indiana expungement help
+        description: Information on sealing criminal records
+        url: https://www.in.gov/courts/
+
+  - id: community
+    title: Community & connection
+    note: "You do not have to figure this out alone."
+    items:
+      - name: United Way of Central Indiana 211
+        description: Call 211 or search online
+        url: https://in211.communityos.org
+        phone: "211"
+
+  - id: government
+    title: State government essentials
+    note:
+    items:
+      - name: Indiana state portal
+        description: Taxes, business, licenses
+        url: https://www.in.gov/
+      - name: Indiana voter registration
+        description: Register or check registration
+        url: https://indianavoters.in.gov/

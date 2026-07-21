@@ -1,0 +1,155 @@
+# us211 Standard State Pack — TEMPLATE
+# Purpose: a structured "arrival and establishment" guide for anyone moving to,
+#   returning to, or starting over in this state. Works with or without money,
+#   with or without an address, with or without documents.
+#
+# Rules for contributors:
+#   - Every entry must link to an official, verified, public source.
+#   - Never fabricate a phone number, address, or program name.
+#   - If a section is not yet researched, leave it empty ([]) — do not guess.
+#   - Keep language plain and welcoming. This may be read by someone in crisis.
+#   - For "how to apply" entries, include the exact URL and any required docs.
+
+state_code: XX
+state_name: State Name
+last_verified: YYYY-MM-DD
+audience: |
+  Anyone arriving in State Name: with a job or without one, with a home or
+  without one, with documents or without them. This is the practical first
+  72 hours (and first 90 days) of getting established.
+
+sections:
+  - id: emergency
+    title: Emergency & immediate safety
+    note: "If you are in danger, call 911. If you are in crisis, call or text 988."
+    items:
+      - name: 911
+        description: Police, fire, medical emergency
+        url:
+        phone: "911"
+      - name: 988 Suicide & Crisis Lifeline
+        description: Call or text 24/7
+        url: https://988lifeline.org
+        phone: "988"
+
+  - id: documents
+    title: Documents & identity
+    note: "Without ID, many doors stay closed. Start these as soon as possible."
+    items:
+      - name: State ID / driver's license
+        description: How to get a first ID, renew one, or replace a lost one
+        url:
+        required_documents: []
+      - name: Birth certificate
+        description: Order from the state vital records office
+        url:
+      - name: Social Security card
+        description: Replace or request a card through SSA
+        url: https://www.ssa.gov/ssnumber
+
+  - id: clothing
+    title: Free or cheap clothing
+    note:
+    items:
+      - name: Free clothing closet / thrift assistance
+        description:
+        url:
+        phone:
+
+  - id: shelter
+    title: Shelter & housing tonight
+    note: "If you have nowhere safe to sleep tonight, start here."
+    items:
+      - name: State 211 (dial 2-1-1)
+        description: Shelter, housing, utility, and crisis referrals
+        url:
+        phone: "211"
+      - name: Coordinated entry / homeless services
+        description:
+        url:
+
+  - id: food
+    title: Food & meals
+    note:
+    items:
+      - name: SNAP (food stamps)
+        description: How to apply for food assistance
+        url:
+        apply_url:
+        phone:
+      - name: Food pantries / hot meals
+        description: Search the state 211 database
+        url:
+
+  - id: health
+    title: Health & mental health
+    note:
+    items:
+      - name: Medicaid
+        description: Free or low-cost health coverage
+        url:
+        apply_url:
+      - name: Community health centers
+        description: Sliding-fee clinics regardless of insurance
+        url: https://findahealthcenter.hrsa.gov
+
+  - id: work
+    title: Work, income & training
+    note:
+    items:
+      - name: Unemployment benefits
+        description: File a claim if you lost a job
+        url:
+      - name: Workforce development / job training
+        description:
+        url:
+      - name: Felony-friendly employers / re-entry job boards
+        description:
+        url:
+
+  - id: transportation
+    title: Getting around
+    note:
+    items:
+      - name: Public transit
+        description:
+        url:
+      - name: Rides for appointments (Medicaid/health)
+        description:
+        url:
+
+  - id: legal
+    title: Legal rights & help
+    note:
+    items:
+      - name: Tenant rights / landlord-tenant hotline
+        description:
+        url:
+      - name: Legal aid
+        description: Free civil legal help for low-income residents
+        url:
+      - name: Expungement / record clearing
+        description:
+        url:
+
+  - id: community
+    title: Community & connection
+    note: "You do not have to figure this out alone."
+    items:
+      - name: United Way / 211
+        description:
+        url:
+      - name: Local mutual aid / newcomer groups
+        description:
+        url:
+
+  - id: government
+    title: State government essentials
+    note:
+    items:
+      - name: State portal
+        description: Taxes, business, licenses
+        url:
+      - name: Voter registration
+        description:
+        url:

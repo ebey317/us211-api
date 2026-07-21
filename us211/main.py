@@ -13,6 +13,7 @@ from us211.adapters import FindhelpAdapter, get_adapter
 from us211.agent import CAPABILITIES, recommend_actions, summarize
 from us211.models import Resource
 from us211.registry import PlatformType, get_source, list_states
+from us211.statepacks import exists, load
 
 app = FastAPI(
     title="us211-api",
@@ -39,6 +40,17 @@ class AskResponse(BaseModel):
     category: str
     summary: str
     resources: list[Resource]
+    actions: list[dict]
+    capabilities: list[dict]
+    resolved_from: str = "param"
+
+
+class StandardResponse(BaseModel):
+    state: str
+    state_name: str
+    audience: str
+    last_verified: str
+    sections: list[dict]
     actions: list[dict]
     capabilities: list[dict]
     resolved_from: str = "param"
@@ -126,8 +138,8 @@ def root() -> dict:
         "name": "us211-api",
         "version": __version__,
         "docs": "/docs",
-        "endpoints": ["/health", "/states", "/resources", "/ask", "/capabilities"],
-        "note": "Omit ?state= and we resolve it from your IP address.",
+        "endpoints": ["/health", "/states", "/resources", "/ask", "/standard", "/capabilities"],
+        "note": "Omit ?state= and we resolve it from your IP address. Try /standard?state=IN for an arrival pack.",
     }
 
 
@@ -196,6 +208,46 @@ async def ask(
         summary=summarize(found, category, resolved_state),
         resources=found,
         actions=[a.__dict__ for a in recommend_actions(found)],
+        capabilities=CAPABILITIES,
+        resolved_from=method,
+    )
+
+
+@app.get("/standard", response_model=StandardResponse)
+async def standard(
+    request: Request,
+    state: str | None = Query(None, description="2-letter state code; if omitted, resolved from IP"),
+) -> StandardResponse:
+    """Return a structured arrival + establishment pack for a state."""
+    resolved_state, _, method = (state, None, "param")
+    if not state:
+        resolved_state, _, method = await resolve_location(request)
+    if not resolved_state:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not resolve a US state. Pass ?state= explicitly (e.g. IN).",
+        )
+    src = get_source(resolved_state)
+    if src is None:
+        raise HTTPException(status_code=404, detail=f"Unknown state/territory: {resolved_state!r}")
+    if not exists(resolved_state):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Standard arrival pack not yet available for {resolved_state}.",
+        )
+    pack = load(resolved_state)
+    return StandardResponse(
+        state=resolved_state,
+        state_name=pack["state_name"],
+        audience=pack["audience"],
+        last_verified=pack["last_verified"],
+        sections=pack["sections"],
+        actions=[
+            {"kind": "summarize", "label": "Summarize this pack", "detail": "Short version for quick reading."},
+            {"kind": "read_aloud", "label": "Read aloud", "detail": "Hands-free playback of the arrival guide."},
+            {"kind": "email", "label": "Email me a copy", "detail": "Send this pack to an email address."},
+            {"kind": "print", "label": "Print this pack", "detail": "Print-ready arrival guide."},
+        ],
         capabilities=CAPABILITIES,
         resolved_from=method,
     )
