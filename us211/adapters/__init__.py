@@ -3,10 +3,11 @@ from __future__ import annotations
 
 from us211.adapters.base import BaseAdapter
 from us211.adapters.findhelp import FindhelpAdapter
+from us211.adapters.icarol import iCarolAdapter
 from us211.adapters.visionlink import VisionLinkAdapter
 from us211.registry import PlatformType, Source
 
-__all__ = ["BaseAdapter", "VisionLinkAdapter", "FindhelpAdapter", "get_adapter"]
+__all__ = ["BaseAdapter", "VisionLinkAdapter", "FindhelpAdapter", "iCarolAdapter", "get_adapter"]
 
 
 def get_adapter(source: Source) -> BaseAdapter | None:
@@ -15,5 +16,6 @@ def get_adapter(source: Source) -> BaseAdapter | None:
         return VisionLinkAdapter(base_url=source.base_url, source_name=source.name)
     if source.platform is PlatformType.FINDHELP:
         return FindhelpAdapter(base_url=source.base_url, source_name=source.name)
-    # iCarol / findhelp adapters land here as they're implemented.
+    if source.platform is PlatformType.ICAROL:
+        return iCarolAdapter(base_url=source.base_url, source_name=source.name)
     return None
