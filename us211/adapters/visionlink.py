@@ -51,6 +51,10 @@ _CATEGORY_TAXONOMY: dict[str, list[int]] = {
     "baby_food": [407769, 410327],
     # TODO: capture taxonomy_ids for housing/financial/utilities/etc from the
     # site's subcategory links (same technique) and add them here.
+    "housing": [],
+    "legal": [408431, 408949, 408964, 409015, 409019, 409025, 409028, 409035, 409036, 409105, 409110, 409111, 409131, 409142, 409146, 409148, 409151, 409156, 409159, 409161, 409169, 409170, 409182, 409204, 409207, 409217, 409237, 409246, 409248, 409249, 409304, 409308, 409309, 409311, 409312, 409323, 409378, 409387, 409489, 409490, 409498, 409500, 409509, 409520, 409525, 412635, 414515],
+    "tenant_rights": [],
+    "eviction_defense": [],
 }
 
 _ORDER = "site%5Csite_addressus%5Csite_addressus%5Czdr"
@@ -60,22 +64,43 @@ _ORDER = "site%5Csite_addressus%5Csite_addressus%5Czdr"
 # the ones we've confirmed and fall back to auto-detection for new instances.
 _KNOWN_INSTANCES: dict[str, dict] = {
     "https://in211.communityos.org": {
-        "org_name": "sc_610", "org_url": "sc_606", "svc_name": "sc_735",
-        "svc_desc": "sc_728", "phone": "sc_726", "addr_1": "sc_675_address_1",
-        "city": "sc_675_city", "state": "sc_675_state", "zip": "sc_675_zip",
-        "lat": "sc_675_latitude", "lng": "sc_675_longitude",
+        "org_name": "sc_610",
+        "org_url": "sc_606",
+        "svc_name": "sc_735",
+        "svc_desc": "sc_728",
+        "phone": "sc_726",
+        "addr_1": "sc_675_address_1",
+        "city": "sc_675_city",
+        "state": "sc_675_state",
+        "zip": "sc_675_zip",
+        "lat": "sc_675_latitude",
+        "lng": "sc_675_longitude",
     },
     "https://211wisconsin.communityos.org": {
-        "org_name": "sc_388", "org_url": "sc_384", "svc_name": "sc_510",
-        "svc_desc": "sc_521", "phone": "sc_1665", "addr_1": "sc_493_address_1",
-        "city": "sc_493_city", "state": "sc_493_state", "zip": "sc_493_zip",
-        "lat": "sc_493_latitude", "lng": "sc_493_longitude",
+        "org_name": "sc_388",
+        "org_url": "sc_384",
+        "svc_name": "sc_510",
+        "svc_desc": "sc_521",
+        "phone": "sc_1665",
+        "addr_1": "sc_493_address_1",
+        "city": "sc_493_city",
+        "state": "sc_493_state",
+        "zip": "sc_493_zip",
+        "lat": "sc_493_latitude",
+        "lng": "sc_493_longitude",
     },
     "https://211-idaho.communityos.org": {
-        "org_name": "sc_610", "org_url": "sc_606", "svc_name": "sc_735",
-        "svc_desc": "sc_728", "phone": "sc_864", "addr_1": "sc_673_address_1",
-        "city": "sc_673_city", "state": "sc_673_state", "zip": "sc_673_zip",
-        "lat": "sc_673_latitude", "lng": "sc_673_longitude",
+        "org_name": "sc_610",
+        "org_url": "sc_606",
+        "svc_name": "sc_735",
+        "svc_desc": "sc_728",
+        "phone": "sc_864",
+        "addr_1": "sc_673_address_1",
+        "city": "sc_673_city",
+        "state": "sc_673_state",
+        "zip": "sc_673_zip",
+        "lat": "sc_673_latitude",
+        "lng": "sc_673_longitude",
     },
     # TN (easttn211) returned 0 rows for food taxonomy 407761 — food may be
     # under a different taxonomy_id there; left to auto-detect once confirmed.
